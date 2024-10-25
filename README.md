@@ -2,30 +2,40 @@
 General Matrix Multiplication using NVIDIA Tensor Cores. 
 
 Custom data structures `MatrixFP16` and `MatrixFP32` are defined (in *src*) to make working with matrices easy. Supported features are as follows:
-1. Define half precision `n x n` matrix `A` on RAM (host memory):
+1. Define half precision `n x n` matrix `A_FP16` on RAM (host memory):
+    
     `MatrixFP16 A_FP16 = MatrixFP16(n, n, false);`
 
-2. Define half precision `n x n` matrix `d_A` on VRAM (device global memory):
-    `MatrixFP16 A_FP16 = MatrixFP16(n, n, true);`
+2. Define half precision `n x n` matrix `d_A_FP16` on VRAM (device global memory):
+    
+    `MatrixFP16 d_A_FP16 = MatrixFP16(n, n, true);`
 
-3. Define single precision `n x n` matrix `A` on RAM (host memory):
+3. Define single precision `n x n` matrix `A_FP32` on RAM (host memory):
+    
     `MatrixFP16 A_FP32 = MatrixFP32(n, n, false);`
 
-4. Define single precision `n x n` matrix `d_A` on VRAM (device global memory):
-    `MatrixFP16 A_FP32 = MatrixFP32(n, n, true);`
+4. Define single precision `n x n` matrix `d_A_FP32` on VRAM (device global memory):
+    
+    `MatrixFP16 d_A_FP32 = MatrixFP32(n, n, true);`
 
 3. Randomly initialize FP16 or FP32 matrices:
+    
     `random_init_mat(A_FP16, -10, 10); // Random Initialization between -10 and 10`
+    
     `random_init_mat(A_FP32, -10, 10); // Random Initialization between -10 and 10`
 
 4. Move matrix data from RAM to VRAM:
+    
     `A_FP16.copy_to_device(d_A_FP16);`
 
 5. Move matrix data from VRAM to RAM:
+    
     `d_A_FP16.copy_to_host(A_FP16);`
 
 6. Free host/device memory:
+    
     `A_FP16.free_mat();`
+    
     `FP16.free_mat();`
 
 ## cuBLAS vs Custom Matrix Multiplication using Tensor Cores
