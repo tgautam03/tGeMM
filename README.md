@@ -1,2 +1,2 @@
 # tGeMM
-General Matrix Multiplication using NVIDIA Tensor Cores
+General Matrix Multiplication using NVIDIA Tensor Cores. 
