@@ -7,7 +7,7 @@
 #include "../include/MatrixFP16.cuh"
 #include "../include/utils.cuh"
 
-#include "../include/naive_tensor_xgemm.cuh"
+#include "../include/naive_tensor_tgemm.cuh"
 
 int main(int argc, char const *argv[])
 {
@@ -22,8 +22,8 @@ int main(int argc, char const *argv[])
     cudaEventCreate(&end);
 
     // Store time and GFLOPS
-    double xgemm_time[n_sizes];
-    double xgemm_gflops[n_sizes];
+    double tgemm_time[n_sizes];
+    double tgemm_gflops[n_sizes];
     double cublas_time[n_sizes];
     double cublas_gflops[n_sizes];
 
@@ -36,13 +36,13 @@ int main(int argc, char const *argv[])
         MatrixFP16 A_FP16 = MatrixFP16(n, n, false);
         MatrixFP16 B_FP16 = MatrixFP16(n, n, false);
         MatrixFP32 C_FP32_cublas = MatrixFP32(n, n, false);
-        MatrixFP32 C_FP32_xgemm = MatrixFP32(n, n, false);
+        MatrixFP32 C_FP32_tgemm = MatrixFP32(n, n, false);
 
         // Initialize Matrices
         random_init_mat(A_FP16, -10, 10);          // Random Initialization between -10 and 10
         random_init_mat(B_FP16, -10, 10);          // Random Initialization between -10 and 10
         init_mat(C_FP32_cublas, 1.0f);     // Initialize to 1
-        init_mat(C_FP32_xgemm, -1.0f);     // Initialize to 1
+        init_mat(C_FP32_tgemm, -1.0f);     // Initialize to 1
 
         // Move matrices to device
         MatrixFP16 d_A_FP16 = MatrixFP16(n, n, true); 
@@ -51,8 +51,8 @@ int main(int argc, char const *argv[])
         B_FP16.copy_to_device(d_B_FP16);
         MatrixFP32 d_C_FP32_cublas = MatrixFP32(n, n, true); 
         C_FP32_cublas.copy_to_device(d_C_FP32_cublas);
-        MatrixFP32 d_C_FP32_xgemm = MatrixFP32(n, n, true); 
-        C_FP32_xgemm.copy_to_device(d_C_FP32_xgemm);
+        MatrixFP32 d_C_FP32_tgemm = MatrixFP32(n, n, true); 
+        C_FP32_tgemm.copy_to_device(d_C_FP32_tgemm);
         cudaDeviceSynchronize();
 
         //----------------------------------------------------//
@@ -78,14 +78,14 @@ int main(int argc, char const *argv[])
         cudaDeviceSynchronize();
 
         // Naive Kernel execution
-        naive_tensor_xgemm(d_A_FP16.ptr, d_B_FP16.ptr, d_C_FP32_xgemm.ptr, d_C_FP32_xgemm.n_rows, d_C_FP32_xgemm.n_cols, d_A_FP16.n_cols);
+        naive_tensor_tgemm(d_A_FP16.ptr, d_B_FP16.ptr, d_C_FP32_tgemm.ptr, d_C_FP32_tgemm.n_rows, d_C_FP32_tgemm.n_cols, d_A_FP16.n_cols);
         cudaDeviceSynchronize();
 
         // Assert that naive implementation is correct
         d_C_FP32_cublas.copy_to_host(C_FP32_cublas);
-        d_C_FP32_xgemm.copy_to_host(C_FP32_xgemm);
+        d_C_FP32_tgemm.copy_to_host(C_FP32_tgemm);
         std::cout << "Asserting Results for N: " << n << "\n";
-        assert_mat(C_FP32_xgemm, C_FP32_cublas, 1e-8);
+        assert_mat(C_FP32_tgemm, C_FP32_cublas, 1e-8);
         std::cout << "Assertion Passed! \n \n";
 
         // Printing the smallest matrix result
@@ -95,18 +95,18 @@ int main(int argc, char const *argv[])
             print_mat(C_FP32_cublas, true);
             std::cout << "\n";
 
-            std::cout << "Matrix C (xGeMM): \n";
-            print_mat(C_FP32_xgemm, true);
+            std::cout << "Matrix C (tGeMM): \n";
+            print_mat(C_FP32_tgemm, true);
             std::cout << "\n";
         }
 
         //----------------------------------------------------//
-        //---------------------- xGeMM -----------------------//
+        //---------------------- tGeMM -----------------------//
         //----------------------------------------------------//
         cudaEventRecord(beg);
         for (int n_runs = 0; n_runs < 10; n_runs++)
         {
-            naive_tensor_xgemm(d_A_FP16.ptr, d_B_FP16.ptr, d_C_FP32_xgemm.ptr, d_C_FP32_xgemm.n_rows, d_C_FP32_xgemm.n_cols, d_A_FP16.n_cols);
+            naive_tensor_tgemm(d_A_FP16.ptr, d_B_FP16.ptr, d_C_FP32_tgemm.ptr, d_C_FP32_tgemm.n_rows, d_C_FP32_tgemm.n_cols, d_A_FP16.n_cols);
             cudaDeviceSynchronize();
         }
         cudaEventRecord(end);
@@ -115,19 +115,19 @@ int main(int argc, char const *argv[])
         cudaEventElapsedTime(&elapsed_time, beg, end);
         elapsed_time /= 1000.;
 
-        xgemm_time[mat_size] = (elapsed_time) / 10;
-        xgemm_gflops[mat_size] = 2. * 1e-9 * 10 * n * n * n / (elapsed_time);
+        tgemm_time[mat_size] = (elapsed_time) / 10;
+        tgemm_gflops[mat_size] = 2. * 1e-9 * 10 * n * n * n / (elapsed_time);
 
         // Free Memory
         A_FP16.free_mat();
         B_FP16.free_mat();
         C_FP32_cublas.free_mat();
-        C_FP32_xgemm.free_mat();
+        C_FP32_tgemm.free_mat();
 
         d_A_FP16.free_mat();
         d_B_FP16.free_mat();
         d_C_FP32_cublas.free_mat();
-        d_C_FP32_xgemm.free_mat();
+        d_C_FP32_tgemm.free_mat();
     }
 
     // Reading cuBLAS times and GFLOPS
@@ -189,27 +189,27 @@ int main(int argc, char const *argv[])
     for (int mat_size = 0; mat_size < n_sizes; mat_size++)
         std::cout << cublas_time[mat_size] << " ";
     std::cout << "\n";
-    std::cout << "xGeMM Time (seconds): ";
+    std::cout << "tGeMM Time (seconds): ";
     for (int mat_size = 0; mat_size < n_sizes; mat_size++)
-        std::cout << xgemm_time[mat_size] << " ";
+        std::cout << tgemm_time[mat_size] << " ";
     std::cout << "\n \n";
 
     std::cout << "cuBLAS GFLOPS: ";
     for (int mat_size = 0; mat_size < n_sizes; mat_size++)
         std::cout << cublas_gflops[mat_size] << " ";
     std::cout << "\n";
-    std::cout << "xGeMM GFLOPS: ";
+    std::cout << "tGeMM GFLOPS: ";
     for (int mat_size = 0; mat_size < n_sizes; mat_size++)
-        std::cout << xgemm_gflops[mat_size] << " ";
+        std::cout << tgemm_gflops[mat_size] << " ";
     std::cout << "\n \n";
 
-    std::cout << "cuBLAS vs Naive xGeMM (CuBLAS/xGeMM): ";
+    std::cout << "cuBLAS vs Naive tGeMM (CuBLAS/tGeMM): ";
     for (int mat_size = 0; mat_size < n_sizes; mat_size++)
-        std::cout << std::fixed << std::setprecision(2) << cublas_time[mat_size]/xgemm_time[mat_size]*100 << "% ";
+        std::cout << std::fixed << std::setprecision(2) << cublas_time[mat_size]/tgemm_time[mat_size]*100 << "% ";
     std::cout << "\n";
 
     // Saving to benchmark file
-    update_benckmark_txt("txt_benchmarks/naive_xgemm.txt", xgemm_time, xgemm_gflops, mat_sizes, n_sizes);
+    update_benckmark_txt("txt_benchmarks/naive_tgemm.txt", tgemm_time, tgemm_gflops, mat_sizes, n_sizes);
 
     return 0;
 }

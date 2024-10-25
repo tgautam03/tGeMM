@@ -24,8 +24,8 @@ build/utils.o: src/utils.cu
 	$(CC) $(LINK_CUBLAS) build/MatrixFP32.o build/MatrixFP16.o build/utils.o test/00_benchmark_cuBLAS.cu -o 00_benchmark_cuBLAS.out
 
 # Naive Tensor vs cuBLAS
-01_benchmark_naive.out: src/naive_tensor_xgemm.cu test/01_benchmark_naive.cu build/MatrixFP32.o build/MatrixFP16.o build/utils.o
-	$(CC) -arch=sm_86 $(LINK_CUBLAS) build/MatrixFP32.o build/MatrixFP16.o build/utils.o src/naive_tensor_xgemm.cu test/01_benchmark_naive.cu -o 01_benchmark_naive.out
+01_benchmark_naive.out: src/naive_tensor_tgemm.cu test/01_benchmark_naive.cu build/MatrixFP32.o build/MatrixFP16.o build/utils.o
+	$(CC) -arch=sm_86 $(LINK_CUBLAS) build/MatrixFP32.o build/MatrixFP16.o build/utils.o src/naive_tensor_tgemm.cu test/01_benchmark_naive.cu -o 01_benchmark_naive.out
 
 # Clean executable files
 clean: 
