@@ -12,11 +12,11 @@ Custom data structures `MatrixFP16` and `MatrixFP32` are defined (in *src*) to m
 
 3. Define single precision `n x n` matrix `A_FP32` on RAM (host memory):
     
-    `MatrixFP16 A_FP32 = MatrixFP32(n, n, false);`
+    `MatrixFP32 A_FP32 = MatrixFP32(n, n, false);`
 
 4. Define single precision `n x n` matrix `d_A_FP32` on VRAM (device global memory):
     
-    `MatrixFP16 d_A_FP32 = MatrixFP32(n, n, true);`
+    `MatrixFP32 d_A_FP32 = MatrixFP32(n, n, true);`
 
 3. Randomly initialize FP16 or FP32 matrices:
     
