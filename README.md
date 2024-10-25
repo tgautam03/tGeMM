@@ -1,7 +1,7 @@
 # tGeMM
 General Matrix Multiplication using NVIDIA Tensor Cores. 
 
-Custom data structures `MatrixFP16` and `MatrixFP32` are defined (in *src*) to define and work with matrices:
+Custom data structures `MatrixFP16` and `MatrixFP32` are defined (in *src*) to make working with matrices easy:
 1. Define half precision `n x n` matrix `A` on RAM (host memory):
     `MatrixFP16 A_FP16 = MatrixFP16(n, n, false);`
 
