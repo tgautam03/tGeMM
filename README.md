@@ -1,5 +1,5 @@
 # tGeMM
-General Matrix Multiplication using NVIDIA Tensor Cores. 
+General Matrix Multiplication using NVIDIA Tensor Cores. **Tested on NVIDIA RTX 3090 using Ubuntu 24.04.1 LTS with nvidia-driver-550 and CUDA 12.4**.
 
 Custom data structures `MatrixFP16` and `MatrixFP32` are defined (in *src*) to make working with matrices easy. Supported features are as follows:
 1. Define half precision `n x n` matrix `A_FP16` on RAM (host memory):
